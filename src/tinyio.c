@@ -16,7 +16,7 @@ mrb_file_free(mrb_state *mrb, void *ptr)
   if (ptr) fclose((FILE*)ptr);
 }
 
-const static struct mrb_data_type mrb_file_type = {"File", mrb_file_free};
+static const struct mrb_data_type mrb_file_type = {"File", mrb_file_free};
 
 // /*
 //  *  call-seq:
