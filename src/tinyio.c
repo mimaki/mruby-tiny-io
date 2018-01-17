@@ -79,7 +79,7 @@ static mrb_value
 mrb_file_init(mrb_state *mrb, mrb_value self)
 {
   char *name;
-  char *mode = "r";
+  const char *mode = "r";
   mrb_int perm = 0666;
   FILE *fp;
 
