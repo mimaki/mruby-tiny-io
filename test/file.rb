@@ -1,55 +1,54 @@
 # File class
 
 assert('File', "class") do
-  File.class == Class
+  assert_equal(Class, File.class)
 end
 
 assert('File', 'Enumerable') do
-  File.include?(Enumerable)
+  assert_true(File.include?(Enumerable))
 end
 
 assert('File', 'superclass') do
-  File.superclass == IO
+  assert_equal(IO, File.superclass)
 end
 
 assert('File', 'new: cannot open') do
-  e = nil
-  begin
+  assert_raise(IOError) {
     File.new('./cannot_open')
-  rescue => e
-  end
-  e.class == IOError
+  }
 end
 
 assert('File', 'new') do
-  File.new('./test')
-  File.new('./dummy', 'w')
+  assert_nothing_raised {
+    File.new('./test')
+    File.new('./dummy', 'w')
+  }
 end
 
 assert('File', 'open: cannot open') do
-  e = nil
-  begin
+  assert_raise(IOError) {
     File.open('./cannot_open')
-  rescue => e
-  end
-  e.class == IOError
+  }
 end
 
 assert('File', 'open') do
-  File.open('./test')
-  File.open('./dummy', 'w')
+  assert_nothing_raised {
+    File.open('./test')
+    File.open('./dummy', 'w')
+  }
 end
 
 assert('File', 'close') do
-  File.open('./test').close == nil
+  assert_nothing_raised {
+    assert_nil(File.open('./test').close)
+  }
 end
 
 assert('File', 'closed?') do
   f = File.open('./test')
-  a = f.closed?
+  assert_false(f.closed?)
   f.close
-  b = f.closed?
-  !a && b
+  assert_true(f.closed?)
 end
 
 assert('File', 'write') do
@@ -57,7 +56,7 @@ assert('File', 'write') do
   File.open('./temp', 'w') do |f|
     len = f.write('12345')
   end
-  len == 5
+  assert_equal(5, len)
 end
 
 assert('File', 'read') do
@@ -65,7 +64,7 @@ assert('File', 'read') do
   s = ''
   File.open('./temp', 'w') {|f| f.write(t)}
   File.open('./temp', 'r') {|f| s = f.read}
-  s == t
+  assert_equal(t, s)
 end
 
 assert('File', 'read: size') do
@@ -77,7 +76,7 @@ assert('File', 'read: size') do
     s += f.read(10)
     s += f.read(10)
   }
-  s == t
+  assert_equal(t, s)
 end
 
 assert('File', 'read: buf') do
@@ -85,7 +84,7 @@ assert('File', 'read: buf') do
   s = ''
   File.open('./temp', 'w') {|f| f.write(t)}
   File.open('./temp', 'r') {|f| f.read(100, s)}
-  s == t
+  assert_equal(t, s)
 end
 
 assert('File', '<< str') do
@@ -93,7 +92,7 @@ assert('File', '<< str') do
   s = ''
   File.open('./temp', 'w') {|f| f << t}
   File.open('./temp', 'r') {|f| s = f.read}
-  s == t
+  assert_equal(t, s)
 end
 
 assert('File', '<< obj') do
@@ -101,19 +100,16 @@ assert('File', '<< obj') do
   s = ''
   File.open('./temp', 'w') {|f| f << t}
   File.open('./temp', 'r') {|f| s = f.read}
-  s == t.to_s
+  assert_equal(t.to_s, s)
 end
 
 assert('File', 'flush') do
-  e = nil
-  begin
+  assert_nothing_raised {
     File.open('./temp', 'w') {|f|
       f.write '12345'
       f.flush
     }
-  rescue => e
-  end
-  !e
+  }
 end
 
 assert('File', 'putc') do
@@ -123,7 +119,7 @@ assert('File', 'putc') do
     t.each_char {|c| f.putc(c)}
   }
   File.open('./temp', 'r') {|f| s=f.read}
-  s == t
+  assert_equal(t, s)
 end
 
 assert('File', 'getc') do
@@ -135,7 +131,7 @@ assert('File', 'getc') do
       s += c
     end
   }
-  s == t
+  assert_equal(t, s)
 end
 
 assert('File', 'print') do
@@ -143,7 +139,8 @@ assert('File', 'print') do
   s = ''
   File.open('./temp', 'w') {|f| f.print(t[0], t[1], t[2])}
   File.open('./temp', 'r') {|f| s = f.read}
-  s == t.inject("") {|s, v| s += v.to_s}
+  tt = t.inject("") {|s, v| s += v.to_s}
+  assert_equal(tt, s)
 end
 
 assert('File', 'puts') do
@@ -156,7 +153,7 @@ assert('File', 'puts') do
   s = ''
   File.open('./temp', 'w') {|f| f.puts(t[0], t[1], t[2], t[3])}
   File.open('./temp', 'r') {|f| s = f.read}
-  s == tt
+  assert_equal(tt, s)
 end
 
 # assert('File', 'printf') do
@@ -168,121 +165,107 @@ end
 
 assert('File', 'gets') do
   t = "123456789\n1234567890\nabcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ"
-  b = true
   File.open('./temp', 'w') {|f| f.write(t)}
   File.open('./temp', 'r') {|f|
-    b &= (f.gets == "123456789\n")
-    b &= (f.gets == "1234567890\n")
-    b &= (f.gets == "abcdefghijklmnopqrstuvwxyz\n")
-    b &= (f.gets == "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    assert_equal("123456789\n", f.gets)
+    assert_equal("1234567890\n", f.gets)
+    assert_equal("abcdefghijklmnopqrstuvwxyz\n", f.gets)
+    assert_equal("ABCDEFGHIJKLMNOPQRSTUVWXYZ", f.gets)
   }
-  b
 end
 
 assert('File', 'gets(limit)') do
   t = "123456789\n1234567890\nabcdefghijklmnopqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ"
-  b = true
   File.open('./temp', 'w') {|f| f.write(t)}
   File.open('./temp', 'r') {|f|
-    b &= (f.gets(20) == "123456789\n")
-    b &= (f.gets(20) == "1234567890\n")
-    b &= (f.gets(20) == "abcdefghijklmnopqrs")
-    b &= (f.gets(20) == "tuvwxyz\n")
-    b &= (f.gets(20) == "ABCDEFGHIJKLMNOPQRS")
-    b &= (f.gets(20) == "TUVWXYZ")
+    assert_equal("123456789\n", f.gets(20))
+    assert_equal("1234567890\n", f.gets(20))
+    assert_equal("abcdefghijklmnopqrs", f.gets(20))
+    assert_equal("tuvwxyz\n", f.gets(20))
+    assert_equal("ABCDEFGHIJKLMNOPQRS", f.gets(20))
+    assert_equal("TUVWXYZ", f.gets(20))
   }
-  b
 end
 
 assert('File', 'tell/pos') do
   t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  b = true
   p0,p1,p25,p26 = [],[],[],[]
   File.open('./temp', 'w') {|f| f.write(t)}
   File.open('./temp', 'r') {|f|
-    b &= (f.tell == 0)
-    b &= (f.pos  == 0)
+    assert_equal(0, f.tell)
+    assert_equal(0, f.pos)
     f.read(1)
-    b &= (f.tell == 1)
-    b &= (f.pos  == 1)
+    assert_equal(1, f.tell)
+    assert_equal(1, f.pos)
     f.read(24)
-    b &= (f.tell == 25)
-    b &= (f.pos  == 25)
+    assert_equal(25, f.tell)
+    assert_equal(25, f.pos)
     f.read(100)
-    b &= (f.tell == 26)
-    b &= (f.pos  == 26)
+    assert_equal(26, f.tell)
+    assert_equal(26, f.pos)
   }
-  b
 end
 
 assert('File', 'seek: SEEK_SET') do
   t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  b = true
   File.open('./temp', 'w') {|f|
     f.write(t)
     f.seek(0, IO::SEEK_SET)
-    b &= (f.pos == 0)
+    assert_equal(0, f.pos)
     f.seek(10, IO::SEEK_SET)
-    b &= (f.pos == 10)
+    assert_equal(10, f.pos)
     f.seek(26, IO::SEEK_SET)
-    b &= (f.pos == 26)
+    assert_equal(26, f.pos)
     f.seek(100, IO::SEEK_SET)
-    b &= (f.pos == 100)
+    assert_equal(100, f.pos)
     f.seek(0)
-    b &= (f.pos == 0)
+    assert_equal(0, f.pos)
   }
-  b
 end
 
 assert('File', 'seek: SEEK_CUR') do
   t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  b = true
   File.open('./temp', 'w') {|f|
     f.write(t)
     f.seek(0, IO::SEEK_CUR)
-    b &= (f.pos == 26)
+    assert_equal(26, f.pos)
     f.seek(-25, IO::SEEK_CUR)
-    b &= (f.pos == 1)
+    assert_equal(1, f.pos)
     f.seek(-1, IO::SEEK_CUR)
-    b &= (f.pos == 0)
+    assert_equal(0, f.pos)
     f.seek(100, IO::SEEK_CUR)
-    b &= (f.pos == 100)
+    assert_equal(100, f.pos)
   }
-  b
 end
 
 assert('File', 'seek: SEEK_END') do
   t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  b = true
   File.open('./temp', 'w') {|f|
     f.write(t)
     f.seek(0, IO::SEEK_END)
-    b &= (f.pos == 26)
+    assert_equal(26, f.pos)
     f.seek(-26, IO::SEEK_END)
-    b &= (f.pos == 0)
+    assert_equal(0, f.pos)
     f.seek(-10, IO::SEEK_END)
-    b &= (f.pos == 16)
+    assert_equal(16, f.pos)
     f.seek(100, IO::SEEK_END)
-    b &= (f.pos == 126)
+    assert_equal(126, f.pos)
   }
-  b
 end
 
 assert('File', 'pos=') do
   t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  b = true
   File.open('./temp', 'w') {|f|
     f.write(t)
     f.pos = 0
-    b &= (f.pos == 0)
+    assert_equal(0, f.pos)
     f.pos = 10
-    b &= (f.pos == 10)
+    assert_equal(10, f.pos)
     f.pos = 26
-    b &= (f.pos == 26)
+    assert_equal(26, f.pos)
     f.pos = 100
-    b &= (f.pos == 100)
+    assert_equal(100, f.pos)
   }
-  b
 end
 
 # assert('File', 'delete') do
